@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 GRAPH = "example.json"
 
-with open(GRAPH, 'r') as myfile:
-    data=myfile.read()
+with open(GRAPH, 'r') as f:
+    data = f.read()
 
 graph_dict = json.loads(data)
 
