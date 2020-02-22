@@ -27,6 +27,9 @@ def load_graph(filename):
     graph_dict = json.loads(data)
     G = nx.Graph(graph_dict)
 
+    # Get rid of isolated nodes.
+    G.remove_nodes_from(nx.isolates(G))
+
     return G, num_players, num_seeds, unique_id
 
 
