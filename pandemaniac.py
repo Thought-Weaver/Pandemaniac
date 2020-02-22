@@ -2,6 +2,7 @@ import json
 import networkx as nx
 import matplotlib.pyplot as plt
 import sys
+import heapq
 
 
 # ------------------------------ #
@@ -32,6 +33,27 @@ def load_graph(filename):
 
     return G, num_players, num_seeds, unique_id
 
+
+# ------------------------------ #
+# TOP K NODE SELECTION           #
+# ------------------------------ #
+
+
+def degree_centrality_top_k(G, num_seeds):
+    return heapq.nlargest(nx.degree_centrality(G), num_seeds)
+
+
+def closeness_centrality_top_k(G, num_seeds):
+    return heapq.nlargest(nx.closeness_centrality(G), num_seeds)
+
+
+def betweenness_centrality_top_k(G, num_seeds):
+    return heapq.nlargest(nx.betweenness_centrality(G), num_seeds)
+
+
+# ------------------------------ #
+# MAIN PROGRAM                   #
+# ------------------------------ #
 
 if __name__ == "__init__":
     if len(sys.argv) < 2:
