@@ -35,4 +35,4 @@ if __name__ == "__init__":
         print("Error: Need to specify a JSON graph filename.")
         exit(1)
 
-    load_graph(sys.argv[1])
+    G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
