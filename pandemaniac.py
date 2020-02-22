@@ -19,11 +19,10 @@ def load_graph(filename):
     with open(filename, 'r') as f:
         data = f.read()
 
-    i = filename.index('.')
-    num_players = int(filename[0:i])
-    j = filename.index('.', i + 1)
-    num_seeds = int(filename[i + 1:j])
-    unique_id = int(filename[j + 1:filename.index('.', j + 1)])
+    split_filename = filename.split('.')
+    num_players = int(split_filename[0])
+    num_seeds   = int(split_filename[1])
+    unique_id   = int(split_filename[2])
 
     graph_dict = json.loads(data)
     G = nx.Graph(graph_dict)
