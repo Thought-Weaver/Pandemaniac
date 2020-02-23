@@ -78,7 +78,7 @@ def select_nodes(measure):
         nodes = degree_centrality_top_k(G, num_seeds)
     elif measure == 1:
         nodes = closeness_centrality_top_k(G, num_seeds)
-    elif measures == 2:
+    elif measure == 2:
         nodes = betweenness_centrality_top_k(G, num_seeds)
     else:
         nodes = eigenvector_centrality_top_k(G, num_seeds)
