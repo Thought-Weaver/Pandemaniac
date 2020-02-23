@@ -2,8 +2,8 @@ import json
 import networkx as nx
 import matplotlib.pyplot as plt
 import sys
-import heapq
 import sim
+import numpy as np
 
 
 # ------------------------------ #
@@ -39,23 +39,26 @@ def load_graph(filename):
 # TOP K NODE SELECTION           #
 # ------------------------------ #
 
+def abstracted_node_selection(centrality, num_seeds):
+    sorted_centrality = np.array(sorted(centrality.items(), key=lambda x: x[1]))
+    return sorted_centrality[-num_seeds:, 0]
+
 
 def degree_centrality_top_k(G, num_seeds):
-    return heapq.nlargest(num_seeds, nx.degree_centrality(G))
+    return abstracted_node_selection(nx.degree_centrality(G), num_seeds)
 
 
 def closeness_centrality_top_k(G, num_seeds):
-    return heapq.nlargest(num_seeds, nx.closeness_centrality(G))
+    return abstracted_node_selection(nx.closeness_centrality(G), num_seeds)
 
 
 def betweenness_centrality_top_k(G, num_seeds):
-    return heapq.nlargest(num_seeds, nx.betweenness_centrality(G))
+    return abstracted_node_selection(nx.betweenness_centrality(G), num_seeds)
 
 
 # ------------------------------ #
 # OUTPUT NODES                   #
 # ------------------------------ #
-
 
 def select_nodes(measure):
     # Generate top k and write to file 
@@ -88,7 +91,9 @@ if __name__ == "__main__":
 
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
-    nodes = select_nodes(sys.argv[2])
+    nodes = select_nodes(int(sys.argv[2]))
+
+    print("NODES: %s" % nodes)
 
     print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
 
