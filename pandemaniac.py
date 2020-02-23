@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 import sim
 import numpy as np
+import heapq
 
 
 # ------------------------------ #
@@ -40,8 +41,8 @@ def load_graph(filename):
 # ------------------------------ #
 
 def abstracted_node_selection(centrality, num_seeds):
-    sorted_centrality = np.array(sorted(centrality.items(), key=lambda x: x[1]))
-    return sorted_centrality[-num_seeds:, 0]
+    sorted_centrality = heapq.nlargest(num_seeds, centrality.items(), key=lambda x: x[1])
+    return np.array(sorted_centrality)[:, 0]
 
 
 def degree_centrality_top_k(G, num_seeds):
@@ -56,6 +57,17 @@ def betweenness_centrality_top_k(G, num_seeds):
     return abstracted_node_selection(nx.betweenness_centrality(G), num_seeds)
 
 
+def eigenvector_centrality_top_k(G, num_seeds):
+    return abstracted_node_selection(nx.eigenvector_centrality(G), num_seeds)
+
+
+def mix_stategies(strategies, ratios):
+    """
+    Given a list of strategy values, mix using the given ratios.
+    """
+    pass
+
+
 # ------------------------------ #
 # OUTPUT NODES                   #
 # ------------------------------ #
@@ -66,8 +78,10 @@ def select_nodes(measure):
         nodes = degree_centrality_top_k(G, num_seeds)
     elif measure == 1:
         nodes = closeness_centrality_top_k(G, num_seeds)
-    else:
+    elif measures == 2:
         nodes = betweenness_centrality_top_k(G, num_seeds)
+    else:
+        nodes = eigenvector_centrality_top_k(G, num_seeds)
 
     return nodes
 
@@ -95,9 +109,8 @@ if __name__ == "__main__":
 
     print("NODES: %s" % nodes)
 
-    print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
+    # Note that the input is {strategy_name: nodes} in a dict.
+    # Add more to have them compete!
+    #print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
 
     output_nodes(sys.argv[1], nodes)
-
-
-
