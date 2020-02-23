@@ -36,6 +36,13 @@ def load_graph(filename):
     return G, num_players, num_seeds, unique_id
 
 
+def prune_graph(G):
+    # Min cut?
+    # Could we prune using an MST?
+    # Also there's something in NX called a dominating set?
+    pass
+
+
 # ------------------------------ #
 # TOP K NODE SELECTION           #
 # ------------------------------ #
@@ -59,6 +66,10 @@ def betweenness_centrality_top_k(G, num_seeds):
 
 def eigenvector_centrality_top_k(G, num_seeds):
     return abstracted_node_selection(nx.eigenvector_centrality(G), num_seeds)
+
+
+def clustering_coefficient_top_k(G, num_seeds):
+    return abstracted_node_selection(nx.clustering(G), num_seeds)
 
 
 def mix_stategies(strategies, ratios):
@@ -105,12 +116,18 @@ if __name__ == "__main__":
 
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
+    print(len(G))
+
+    G = prune_graph(G)
+
+    print(len(G))
+
     nodes = select_nodes(int(sys.argv[2]))
 
     print("NODES: %s" % nodes)
 
     # Note that the input is {strategy_name: nodes} in a dict.
     # Add more to have them compete!
-    #print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
+    print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
 
     output_nodes(sys.argv[1], nodes)
