@@ -116,12 +116,6 @@ if __name__ == "__main__":
 
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
-    print(len(G))
-
-    G = prune_graph(G)
-
-    print(len(G))
-
     nodes = select_nodes(int(sys.argv[2]))
 
     print("NODES: %s" % nodes)
