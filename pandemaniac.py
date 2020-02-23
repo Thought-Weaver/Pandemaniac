@@ -3,6 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import sys
 import heapq
+import sim
 
 
 # ------------------------------ #
@@ -50,7 +51,13 @@ def closeness_centrality_top_k(G, num_seeds):
 def betweenness_centrality_top_k(G, num_seeds):
     return heapq.nlargest(num_seeds, nx.betweenness_centrality(G))
 
-def select_node(filename, measure):
+
+# ------------------------------ #
+# OUTPUT NODES                   #
+# ------------------------------ #
+
+
+def select_nodes(measure):
     # Generate top k and write to file 
     if measure == 0:
         nodes = degree_centrality_top_k(G, num_seeds)
@@ -59,24 +66,33 @@ def select_node(filename, measure):
     else:
         nodes = betweenness_centrality_top_k(G, num_seeds)
 
+    return nodes
+
+
+def output_nodes(filename, nodes):
     out = ""
     for node in nodes:
         out += str(node) + "\n"
-    with open(.replace('json', 'txt'), 'w') as f:
-        f.write(out*50)
+    with open(filename.replace('json', 'txt'), 'w') as f:
+        f.write(out * 50)
+
 
 # ------------------------------ #
 # MAIN PROGRAM                   #
 # ------------------------------ #
 
-if __name__ == "__init__":
+if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Error: Correct input is [JSON filename] [centrality_measure]")
         exit(1)
 
-
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
-    select_node(sys.arvg[1], sys.argv[2])
+    nodes = select_nodes(sys.argv[2])
+
+    print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
+
+    output_nodes(sys.argv[1], nodes)
+
 
 
