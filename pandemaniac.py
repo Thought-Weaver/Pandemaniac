@@ -5,6 +5,8 @@ import sys
 import sim
 import numpy as np
 import heapq
+import community
+import time
 
 
 # ------------------------------ #
@@ -36,11 +38,29 @@ def load_graph(filename):
     return G, num_players, num_seeds, unique_id
 
 
-def prune_graph(G):
+def prune_graph(G, r=1):
     # Min cut?
     # Could we prune using an MST?
     # Also there's something in NX called a dominating set?
-    pass
+    # Trying something I found called communities that uses NX.
+    best_part = community.best_partition(G, resolution=r)
+
+    nodes = {}
+    for node, group in best_part.items():
+        if nodes.get(group) is None:
+            nodes[group] = [node]
+        else:
+            nodes[group].append(node)
+
+    return G.subgraph(max(nodes.items(), key=len)[1])
+
+
+def get_largest_strongly_connected_component(G):
+    return max(nx.strongly_connected_components(G), key=len)
+
+
+def get_largest_weakly_connected_component(G):
+    return max(nx.weakly_connected_components(G), key=len)
 
 
 # ------------------------------ #
@@ -72,18 +92,29 @@ def clustering_coefficient_top_k(G, num_seeds):
     return abstracted_node_selection(nx.clustering(G), num_seeds)
 
 
-def mix_stategies(strategies, ratios):
-    """
-    Given a list of strategy values, mix using the given ratios.
-    """
-    pass
+def katz_centrality_top_k(G, num_seeds):
+    return abstracted_node_selection(nx.katz_centrality(G), num_seeds)
+
+
+def mix_stategies_additive(G, num_seeds):
+    # Setting them manually for now.
+    # Could use closeness, but it's slow for large graphs.
+    ev = nx.eigenvector_centrality(G)
+    # closeness = nx.closeness_centrality(G)
+    btw = nx.betweenness_centrality(G)
+
+    centralities = {}
+    for k in ev:
+        centralities[k] = ev[k] + btw[k]
+
+    return abstracted_node_selection(centralities, num_seeds)
 
 
 # ------------------------------ #
 # OUTPUT NODES                   #
 # ------------------------------ #
 
-def select_nodes(measure):
+def select_nodes(G, measure):
     # Generate top k and write to file 
     if measure == 0:
         nodes = degree_centrality_top_k(G, num_seeds)
@@ -91,6 +122,8 @@ def select_nodes(measure):
         nodes = closeness_centrality_top_k(G, num_seeds)
     elif measure == 2:
         nodes = betweenness_centrality_top_k(G, num_seeds)
+    elif measure == 3:
+        nodes = mix_stategies_additive(G, num_seeds)
     else:
         nodes = eigenvector_centrality_top_k(G, num_seeds)
 
@@ -114,14 +147,25 @@ if __name__ == "__main__":
         print("Error: Correct input is [JSON filename] [centrality_measure]")
         exit(1)
 
+    #s = time.time()
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
-    nodes = select_nodes(int(sys.argv[2]))
+    # Prune G to its best community.
+    G_pruned = prune_graph(G)
 
-    print("NODES: %s" % nodes)
+    # I recommend using 3.
+    nodes = select_nodes(G_pruned, int(sys.argv[2]))
+    # nodes_2 = select_nodes(G, 1)
+
+    # print("NODES: %s" % nodes)
 
     # Note that the input is {strategy_name: nodes} in a dict.
     # Add more to have them compete!
-    print(sim.run(nx.to_dict_of_lists(G), {sys.argv[2]: nodes}))
+    # print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
+
+    # {3: 440, 1: 9558}
+    # Pure closeness is stronger.
 
     output_nodes(sys.argv[1], nodes)
+    #e = time.time()
+    #print(e - s)
