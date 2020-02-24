@@ -175,13 +175,13 @@ if __name__ == "__main__":
     # Closeness is currently best, but very slow.
     # Weights are currently guesses.
     nodes = select_nodes(G_pruned, int(sys.argv[2]), [0.6, 0.1, 0.6, 0.9])
-    nodes_2 = select_nodes(G, 1, [])
+    # nodes_2 = select_nodes(G, 1, [])
 
     # print("NODES: %s" % nodes)
 
     # Note that the input is {strategy_name: nodes} in a dict.
     # Add more to have them compete!
-    print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
+    # print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
 
     output_nodes(sys.argv[1], nodes)
     #e = time.time()
