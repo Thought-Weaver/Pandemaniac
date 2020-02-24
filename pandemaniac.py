@@ -7,6 +7,8 @@ import numpy as np
 import heapq
 import community
 import time
+import collections
+from networkx.algorithms.approximation.vertex_cover import min_weighted_vertex_cover
 
 
 # ------------------------------ #
@@ -55,6 +57,11 @@ def prune_graph(G, r=1):
     return G.subgraph(max(nodes.items(), key=len)[1])
 
 
+def prune_graph_min_weight_vc(G):
+    vc = min_weighted_vertex_cover(G)
+    return G.subgraph(G.nodes() - vc)
+
+
 def get_largest_strongly_connected_component(G):
     return max(nx.strongly_connected_components(G), key=len)
 
@@ -96,16 +103,25 @@ def katz_centrality_top_k(G, num_seeds):
     return abstracted_node_selection(nx.katz_centrality(G), num_seeds)
 
 
-def mix_stategies_additive(G, num_seeds):
+def triangles_top_k(G, num_seeds):
+    return abstracted_node_selection(nx.triangles(G), num_seeds)
+
+
+def mix_stategies_ratio_additive(G, ratios, num_seeds):
     # Setting them manually for now.
     # Could use closeness, but it's slow for large graphs.
     ev = nx.eigenvector_centrality(G)
     # closeness = nx.closeness_centrality(G)
     btw = nx.betweenness_centrality(G)
+    deg = nx.degree_centrality(G)
+    tri = nx.triangles(G)
 
     centralities = {}
     for k in ev:
-        centralities[k] = ev[k] + btw[k]
+        centralities[k] = ratios[0] * ev[k] + \
+                          ratios[1] * btw[k] + \
+                          ratios[2] * deg[k] + \
+                          ratios[3] * tri[k]
 
     return abstracted_node_selection(centralities, num_seeds)
 
@@ -114,7 +130,7 @@ def mix_stategies_additive(G, num_seeds):
 # OUTPUT NODES                   #
 # ------------------------------ #
 
-def select_nodes(G, measure):
+def select_nodes(G, measure, ratios):
     # Generate top k and write to file 
     if measure == 0:
         nodes = degree_centrality_top_k(G, num_seeds)
@@ -123,9 +139,11 @@ def select_nodes(G, measure):
     elif measure == 2:
         nodes = betweenness_centrality_top_k(G, num_seeds)
     elif measure == 3:
-        nodes = mix_stategies_additive(G, num_seeds)
-    else:
         nodes = eigenvector_centrality_top_k(G, num_seeds)
+    elif measure == 4:
+        nodes = triangles_top_k(G, num_seeds)
+    else:
+        nodes = mix_stategies_ratio_additive(G, ratios, num_seeds)
 
     return nodes
 
@@ -154,18 +172,16 @@ if __name__ == "__main__":
     # Not sure if this is ideal. Maybe don't prune at all?
     G_pruned = prune_graph(G)
 
-    # Closeness is currently best.
-    nodes = select_nodes(G_pruned, int(sys.argv[2]))
-    # nodes_2 = select_nodes(G, 1)
+    # Closeness is currently best, but very slow.
+    # Weights are currently guesses.
+    nodes = select_nodes(G_pruned, int(sys.argv[2]), [0.6, 0.1, 0.6, 0.9])
+    nodes_2 = select_nodes(G, 1, [])
 
     # print("NODES: %s" % nodes)
 
     # Note that the input is {strategy_name: nodes} in a dict.
     # Add more to have them compete!
-    # print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
-
-    # {3: 440, 1: 9558}
-    # Pure closeness is stronger in almost every case.
+    print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
 
     output_nodes(sys.argv[1], nodes)
     #e = time.time()
