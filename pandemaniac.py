@@ -151,9 +151,10 @@ if __name__ == "__main__":
     G, num_players, num_seeds, unique_id = load_graph(sys.argv[1])
 
     # Prune G to its best community.
+    # Not sure if this is ideal. Maybe don't prune at all?
     G_pruned = prune_graph(G)
 
-    # I recommend using 3.
+    # Closeness is currently best.
     nodes = select_nodes(G_pruned, int(sys.argv[2]))
     # nodes_2 = select_nodes(G, 1)
 
@@ -164,7 +165,7 @@ if __name__ == "__main__":
     # print(sim.run(nx.to_dict_of_lists(G), {int(sys.argv[2]): nodes, 1: nodes_2}))
 
     # {3: 440, 1: 9558}
-    # Pure closeness is stronger.
+    # Pure closeness is stronger in almost every case.
 
     output_nodes(sys.argv[1], nodes)
     #e = time.time()
